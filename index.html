@@ -63,6 +63,26 @@
         .copy-message.show {
             opacity: 1;
         }
+        /* Progress bar styles */
+        #progress-container {
+            width: 80%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            height: 20px;
+            margin: 10px auto;
+            overflow: hidden;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: #2563eb; /* blue-600 */
+            border-radius: 5px;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            font-size: 0.8rem;
+            transition: width 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -98,10 +118,13 @@
             <!-- سيتم عرض الأحاديث هنا -->
         </main>
 
-        <!-- مؤشر التحميل الأولي -->
+        <!-- مؤشر التحميل الأولي مع شريط التقدم -->
         <div id="initial-loader" class="text-center py-10">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
             <p class="mt-4 text-gray-600">جارٍ تحميل الأحاديث...</p>
+            <div id="progress-container">
+                <div id="progress-bar">0%</div>
+            </div>
         </div>
         
         <!-- مؤشر التحميل عند التمرير -->
@@ -128,6 +151,7 @@
             const initialLoader = document.getElementById('initial-loader');
             const infiniteLoader = document.getElementById('infinite-loader');
             const backToTopBtn = document.getElementById('back-to-top');
+            const progressBar = document.getElementById('progress-bar');
 
             // --- State Management ---
             let allHadiths = []; // Stores all hadiths after fetch
@@ -195,7 +219,33 @@
                     // تم التعديل لتحميل الملف المحلي من مجلد المشروع
                     const response = await fetch('bukhari.json');
                     if (!response.ok) throw new Error('Network response was not ok');
-                    const data = await response.json();
+                    
+                    const reader = response.body.getReader();
+                    const contentLength = +response.headers.get('Content-Length');
+                    let receivedLength = 0;
+                    let chunks = [];
+
+                    // Loop to read the stream and update progress
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            break;
+                        }
+                        chunks.push(value);
+                        receivedLength += value.length;
+                        
+                        // Calculate and update progress
+                        const progress = Math.round((receivedLength / contentLength) * 100);
+                        progressBar.style.width = `${progress}%`;
+                        progressBar.textContent = `${progress}%`;
+                    }
+
+                    // Concatenate chunks and parse JSON
+                    let hadithText = '';
+                    for (let i = 0; i < chunks.length; i++) {
+                        hadithText += new TextDecoder('utf-8').decode(chunks[i], {stream: i < chunks.length -1});
+                    }
+                    const data = JSON.parse(hadithText);
                     
                     // Pre-process and normalize data once on load
                     // نستخدم normalizedArabic هنا للبحث فقط في مصفوفة allHadiths، وليس للعرض
@@ -417,19 +467,6 @@
             // --- Initial Load ---
             loadData();
         });
-
-        // --- Service Worker Registration ---
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('Service Worker registered:', registration);
-                    })
-                    .catch(error => {
-                        console.error('Service Worker registration failed:', error);
-                    });
-            });
-        }
     </script>
 </body>
 </html>
