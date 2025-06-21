@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صحيح البخاري</title>
+    <!-- استدعاء Tailwind CSS من CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- استدعاء خط Tajawal من Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- استدعاء خط Amiri من Google Fonts لخط الحديث العربي -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <!-- استدعاء مكتبة html2canvas لتحويل HTML إلى صورة -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <style>
+        /* تطبيق الخط على كامل الصفحة */
+        body {
+            font-family: 'Tajawal', sans-serif;
+        }
+        /* تصميم مخصص لشريط التمرير */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* تمييز نص البحث - تم التغيير إلى لون النص الأحمر */
+        .highlight {
+            color: #ef4444; /* red-500 - تم التغيير إلى لون النص الأحمر */
+            font-weight: 700;
+        }
+        /* خط مخصص للأحاديث العربية - تم التعديل إلى Amiri */
+        .arabic-hadith-font {
+            font-family: 'Amiri', serif;
+        }
+        /* اخفاء عناصر لا نريدها في الصورة */
+        .no-print {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- حاوية التطبيق الرئيسية -->
+    <div class="container mx-auto p-4 md:p-6 lg:p-8">
+
+        <!-- رأس الصفحة -->
+        <header class="text-center mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-700">صحيح البخاري</h1>
+            <p class="text-gray-500 mt-2">تصفح وابحث في أحاديث الرسول صلى الله عليه وسلم</p>
+        </header>
+
+        <!-- قسم البحث -->
+        <div class="mb-6 sticky top-0 bg-gray-100 py-4 z-10">
+            <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                <input type="text" id="searchInput"
+                    class="flex-grow p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
+                    placeholder="ابحث عن حديث...">
+                <button id="langToggle"
+                    class="bg-blue-200 text-blue-700 p-3 rounded-lg hover:bg-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors font-semibold">
+                    EN
+                </button>
+                <button id="searchButton"
+                    class="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span class="mr-2">بحث</span>
+                </button>
+            </div>
+            <div id="search-info" class="text-center text-gray-500 mt-2 text-sm"></div>
+        </div>
+        
+        <!-- قسم عرض الأحاديث -->
+        <main id="hadiths-container" class="space-y-4">
+            <!-- سيتم ملء الأحاديث هنا بواسطة JavaScript -->
+             <div id="loader" class="text-center py-10">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                <p class="mt-4 text-gray-600">جارٍ تحميل الأحاديث...</p>
+            </div>
+        </main>
+
+        <!-- زر العودة إلى الأعلى -->
+        <button id="back-to-top" class="hidden fixed bottom-5 left-5 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-transform transform hover:scale-110">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+            </svg>
+        </button>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hadithsContainer = document.getElementById('hadiths-container');
+            const searchInput = document.getElementById('searchInput');
+            const searchButton = document.getElementById('searchButton'); 
+            const searchInfo = document.getElementById('search-info');
+            const loader = document.getElementById('loader');
+            const backToTopBtn = document.getElementById('back-to-top');
+            const langToggle = document.getElementById('langToggle'); // زر تبديل اللغة
+
+            let allHadiths = [];
+            let chapterMap = new Map();
+            let currentLanguage = 'ar'; // اللغة الافتراضية
+
+            // دالة لتوحيد الأحرف العربية وإزالة التشكيل للبحث
+            function normalizeArabicForSearch(text) {
+                if (!text) return '';
+                // إزالة التشكيل (الحركات)
+                text = text.replace(/[\u064B-\u0652]/g, ""); 
+                // توحيد الألف بأشكالها (أ، إ، آ) إلى ألف مجردة
+                text = text.replace(/[\u0623\u0625\u0622]/g, "\u0627"); // 0623=أ, 0625=إ, 0622=آ, 0627=ا
+                // توحيد التاء المربوطة (ة) إلى هاء (ه)
+                text = text.replace(/\u0629/g, "\u0647"); // 0629=ة, 0647=ه
+                // توحيد الياء (ى) إلى ياء (ي)
+                text = text.replace(/\u0649/g, "\u064A"); // 0649=ى, 064A=ي
+                return text;
+            }
+
+            // دالة لإنشاء نمط التعبير العادي للتمييز (Highlighting)
+            // يتعامل مع أشكال الأحرف والتشكيل للغة العربية
+            function createArabicHighlightRegexPattern(originalSearchTerm) {
+                if (!originalSearchTerm) return '';
+                let pattern = '';
+                // هروب الأحرف الخاصة في مصطلح البحث الأصلي لاستخدامها في regex
+                const escapedTerm = originalSearchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+                for (let i = 0; i < escapedTerm.length; i++) {
+                    let char = escapedTerm[i];
+                    switch (char) {
+                        case 'ا': case 'أ': case 'إ': case 'آ':
+                            pattern += '[اأإآ]'; // تطابق أي شكل من أشكال الألف
+                            break;
+                        case 'ة':
+                            pattern += '[ةه]'; // تطابق التاء المربوطة أو الهاء
+                            break;
+                        case 'ى':
+                            pattern += '[ىي]'; // تطابق الألف المقصورة أو الياء
+                            break;
+                        default:
+                            pattern += char; // تطابق الأحرف الأخرى حرفيًا
+                    }
+                    // إضافة تطابق اختياري للتشكيل بعد كل حرف أساسي
+                    pattern += '[\\u064B-\\u0652]*'; // تطابق صفر أو أكثر من علامات التشكيل
+                }
+                return pattern;
+            }
+
+            // دالة لتحديث نص زر تبديل اللغة ومربع البحث
+            function updateLangToggleButton() {
+                langToggle.textContent = currentLanguage === 'ar' ? 'EN' : 'AR';
+                searchInput.placeholder = currentLanguage === 'ar' ? 'ابحث عن حديث...' : 'Search Hadith...';
+                // عند تغيير اللغة، نقوم بمسح مربع البحث وإعادة عرض الأحاديث كلها باللغة الجديدة
+                searchInput.value = ''; 
+                displayHadiths(allHadiths); 
+            }
+
+            // تحميل بيانات الأحاديث من ملف JSON
+            fetch('bukhari.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('فشل تحميل ملف البيانات: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    allHadiths = data.hadiths;
+                    // إنشاء خريطة للفصول لسهولة الوصول إليها (تخزين كلتا اللغتين)
+                    data.chapters.forEach(chapter => {
+                        chapterMap.set(chapter.id, { arabic: chapter.arabic, english: chapter.english });
+                    });
+                    displayHadiths(allHadiths); // عرض جميع الأحاديث في البداية
+                    updateLangToggleButton(); // تحديث زر اللغة ومربع البحث بعد التحميل
+                })
+                .catch(error => {
+                    console.error('خطأ:', error);
+                    loader.innerHTML = `<p class="text-red-500">حدث خطأ أثناء تحميل بيانات الأحاديث. يرجى التأكد من وجود ملف bukhari.json في نفس المجلد.</p>`;
+                });
+
+            // دالة لعرض الأحاديث
+            function displayHadiths(hadiths, searchTerm = '') {
+                // استخدام requestAnimationFrame لتحسين أداء العرض
+                requestAnimationFrame(() => {
+                    loader.classList.add('hidden');
+                    hadithsContainer.innerHTML = ''; // مسح الحاوية قبل إضافة الأحاديث الجديدة
+                    
+                    const displayLang = currentLanguage; // اللغة الحالية للعرض
+
+                    if (hadiths.length === 0) {
+                        hadithsContainer.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">${displayLang === 'ar' ? 'لا توجد نتائج تطابق بحثك.' : 'No results found matching your search.'}</div>`;
+                        searchInfo.textContent = displayLang === 'ar' ? 'تم العثور على 0 نتيجة.' : '0 results found.';
+                        return;
+                    }
+
+                    // تحديث معلومات البحث بناءً على لغة العرض
+                    if (searchTerm) {
+                        searchInfo.textContent = displayLang === 'ar' ? 
+                            `تم العثور على ${hadiths.length} نتيجة لكلمة "${searchTerm}".` :
+                            `${hadiths.length} results found for "${searchTerm}".`;
+                    } else {
+                        searchInfo.textContent = displayLang === 'ar' ?
+                            `عرض ${hadiths.length} حديث.` :
+                            `Displaying ${hadiths.length} Hadiths.`;
+                    }
+
+                    const fragment = document.createDocumentFragment();
+                    
+                    let highlightRegex = null;
+                    if (searchTerm) {
+                        if (displayLang === 'ar') {
+                            highlightRegex = new RegExp(createArabicHighlightRegexPattern(searchTerm), 'gi');
+                        } else { // تمييز بالإنجليزية
+                            const escapedTerm = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                            highlightRegex = new RegExp(escapedTerm, 'gi');
+                        }
+                    }
+
+                    hadiths.forEach(hadith => {
+                        const chapterData = chapterMap.get(hadith.chapterId);
+                        const chapterName = chapterData ? (displayLang === 'ar' ? chapterData.arabic : chapterData.english) : (displayLang === 'ar' ? 'غير معروف' : 'Unknown');
+                        
+                        const hadithCard = document.createElement('div');
+                        // تحديد اتجاه النص بناءً على اللغة
+                        hadithCard.className = `bg-white p-4 md:p-6 rounded-lg shadow-md transition-shadow hover:shadow-lg relative`; // إضافة relative للزر share
+
+                        let textToDisplay;
+                        let textClass = ''; // لتطبيق خط الحديث العربي
+                        if (displayLang === 'ar') {
+                            textToDisplay = hadith.arabic;
+                            textClass = 'arabic-hadith-font'; // تطبيق خط Amiri للنص العربي
+                        } else { // English
+                            textToDisplay = hadith.english ? hadith.english.text : '';
+                        }
+                        
+                        if (highlightRegex) {
+                            // تمييز كلمة البحث في النص المعروض (بناءً على اللغة)
+                            textToDisplay = textToDisplay.replace(highlightRegex, `<span class="highlight">$&</span>`);
+                        }
+
+                        // تعديل نص الراوي: إزالة "Narrated" أو "Narrated by"
+                        let narratorText = hadith.english ? hadith.english.narrator : '';
+                        narratorText = narratorText.replace(/^(Narrated(?: by)?\s*)/i, '').trim();
+                        // إذا كان اسم الراوي فارغًا بعد التنظيف، استخدم "غير معروف" أو "Unknown"
+                        if (!narratorText) {
+                            narratorText = displayLang === 'ar' ? 'غير معروف' : 'Unknown';
+                        }
+
+
+                        hadithCard.innerHTML = `
+                            <div class="flex justify-between items-center mb-3 pb-3 border-b">
+                                <h2 class="text-lg font-bold text-blue-600">${chapterName}</h2>
+                                <span class="text-sm font-medium text-gray-500">${displayLang === 'ar' ? 'حديث رقم:' : 'Hadith No.:'} ${hadith.id}</span>
+                            </div>
+                            <div class="text-gray-600 mb-4">
+                                <p><strong class="font-semibold text-gray-800">${displayLang === 'ar' ? 'الراوي:' : 'Narrator:'}</strong> <span class="text-amber-800">${narratorText}</span></p>
+                            </div>
+                            <p class="text-lg leading-relaxed ${textClass}">${textToDisplay}</p>
+                            <button class="share-button absolute top-2 ${displayLang === 'ar' ? 'left-2' : 'right-2'} bg-gray-200 text-gray-700 p-2 rounded-full shadow-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50 transition-colors no-print" title="${displayLang === 'ar' ? 'مشاركة كصورة' : 'Share as Image'}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.49 9 12c0-.49-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6L15.316 6.684m0 6.632a3 3 0 110-6.632m0 6.632a3 3 0 100-6.632" />
+                                </svg>
+                            </button>
+                        `;
+                        fragment.appendChild(hadithCard);
+                    });
+                    hadithsContainer.appendChild(fragment);
+
+                    // إضافة مستمعي الأحداث لأزرار المشاركة بعد إضافة البطاقات إلى DOM
+                    document.querySelectorAll('.share-button').forEach(button => {
+                        button.addEventListener('click', (e) => {
+                            const hadithCardElement = e.target.closest('.bg-white'); // الحصول على بطاقة الحديث الأصلية
+                            shareHadithAsImage(hadithCardElement);
+                        });
+                    });
+                });
+            }
+
+            // دالة لمشاركة الحديث كصورة
+            function shareHadithAsImage(cardElement) {
+                // إخفاء زر المشاركة مؤقتًا قبل التقاط الصورة
+                const shareButton = cardElement.querySelector('.share-button');
+                if (shareButton) {
+                    shareButton.classList.add('no-print');
+                }
+
+                // يمكن إضافة مؤشر تحميل هنا
+                const originalShareButtonText = shareButton ? shareButton.innerHTML : '';
+                if (shareButton) {
+                    shareButton.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mx-auto"></div>`;
+                }
+                
+                html2canvas(cardElement, {
+                    scale: 2, // لزيادة جودة الصورة
+                    useCORS: true // هام إذا كانت هناك صور أو موارد من نطاقات أخرى (لا ينطبق هنا، ولكن ممارسة جيدة)
+                }).then(canvas => {
+                    const image = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.href = image;
+                    link.download = `hadith_${currentLanguage}_${Date.now()}.png`;
+                    document.body.appendChild(link); // يجب أن يكون العنصر في DOM ليتم النقر عليه
+                    link.click();
+                    document.body.removeChild(link); // إزالة العنصر بعد النقر
+
+                    // إعادة زر المشاركة إلى حالته الأصلية
+                    if (shareButton) {
+                        shareButton.classList.remove('no-print');
+                        shareButton.innerHTML = originalShareButtonText;
+                    }
+                    alert(currentLanguage === 'ar' ? 'تم حفظ الصورة بنجاح!' : 'Image saved successfully!');
+
+                }).catch(error => {
+                    console.error('Error generating image:', error);
+                    // إعادة زر المشاركة حتى لو حدث خطأ
+                    if (shareButton) {
+                        shareButton.classList.remove('no-print');
+                        shareButton.innerHTML = originalShareButtonText;
+                    }
+                    alert(currentLanguage === 'ar' ? 'فشل حفظ الصورة.' : 'Failed to save image.');
+                });
+            }
+
+
+            // وظيفة البحث الرئيسية التي يتم استدعاؤها عند النقر على الزر
+            const executeSearch = () => {
+                const searchTerm = searchInput.value.trim();
+
+                if (searchTerm.length === 0) {
+                    displayHadiths(allHadiths); // عرض كل الأحاديث باللغة الحالية
+                    return;
+                }
+                
+                let filteredHadiths = [];
+                if (currentLanguage === 'ar') {
+                    const normalizedSearchTerm = normalizeArabicForSearch(searchTerm); // توحيد كلمة البحث للغة العربية
+                    filteredHadiths = allHadiths.filter(hadith =>
+                        normalizeArabicForSearch(hadith.arabic).includes(normalizedSearchTerm) // المقارنة بالنص العربي الموحد
+                    );
+                } else { // currentLanguage === 'en'
+                    const lowerCaseSearchTerm = searchTerm.toLowerCase(); // تحويل كلمة البحث للإنجليزية إلى أحرف صغيرة
+                    filteredHadiths = allHadiths.filter(hadith =>
+                        hadith.english && hadith.english.text && hadith.english.text.toLowerCase().includes(lowerCaseSearchTerm) // المقارنة بالنص الإنجليزي بأحرف صغيرة
+                    );
+                }
+                
+                displayHadiths(filteredHadiths, searchTerm); // تمرير الأحاديث المفلترة ومصطلح البحث للتمييز
+            };
+
+            // إضافة مستمع لحدث النقر على زر تبديل اللغة
+            langToggle.addEventListener('click', () => {
+                currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
+                updateLangToggleButton(); // تحديث الزر ومربع البحث وإعادة عرض الأحاديث
+            });
+
+            // إضافة مستمع لحدث النقر على زر البحث
+            searchButton.addEventListener('click', executeSearch);
+
+            // إضافة مستمع لحدث الضغط على Enter في حقل البحث لتشغيل البحث
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    executeSearch();
+                }
+            });
+
+            // إظهار وإخفاء زر العودة إلى الأعلى
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.remove('hidden');
+                } else {
+                    backToTopBtn.classList.add('hidden');
+                }
+            });
+
+            // وظيفة النقر على زر العودة إلى الأعلى
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+        });
+    </script>
+
+</body>
+</html>
