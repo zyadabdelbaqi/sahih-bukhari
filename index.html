@@ -40,6 +40,7 @@
         }
         .arabic-hadith-font {
             font-family: 'Amiri', serif;
+            font-size: 1.125rem; /* Default text size: text-lg */
         }
         /* مؤشر التحميل عند التمرير */
         #infinite-loader.hidden {
@@ -90,7 +91,22 @@
                     <span class="mr-2 hidden md:inline">بحث</span>
                 </button>
             </div>
-            <div id="search-info" class="text-center text-gray-500 mt-2 text-sm"></div>
+            <!-- معلومات البحث وأزرار الخط في سطر واحد ومتمركزة -->
+            <div class="flex justify-center items-center mt-2 text-sm space-x-4 rtl:space-x-reverse">
+                <div id="search-info" class="text-gray-500"></div>
+                <div class="flex space-x-2 rtl:space-x-reverse">
+                    <button id="increase-font"
+                        class="bg-gray-200 text-gray-700 p-1 rounded-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors"
+                        title="تكبير الخط">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    </button>
+                    <button id="decrease-font"
+                        class="bg-gray-200 text-gray-700 p-1 rounded-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors"
+                        title="تصغير الخط">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    </button>
+                </div>
+            </div>
         </div>
         
         <!-- قسم عرض الأحاديث -->
@@ -128,6 +144,9 @@
             const initialLoader = document.getElementById('initial-loader');
             const infiniteLoader = document.getElementById('infinite-loader');
             const backToTopBtn = document.getElementById('back-to-top');
+            // Font size buttons
+            const decreaseFontBtn = document.getElementById('decrease-font');
+            const increaseFontBtn = document.getElementById('increase-font');
 
             // --- State Management ---
             let allHadiths = []; // Stores all hadiths after fetch
@@ -136,6 +155,10 @@
             let displayCount = 0; // How many hadiths are currently rendered
             const HADITHS_PER_PAGE = 50; // Number of hadiths to load at a time
             let isFetching = false; // Flag to prevent multiple fetches
+            let currentFontSize = 1.125; // Initial font size in rem (corresponds to text-lg in Tailwind)
+            const FONT_SIZE_STEP = 0.1; // Step for increasing/decreasing font size
+            const MIN_FONT_SIZE = 0.9; // Minimum font size
+            const MAX_FONT_SIZE = 1.5; // Maximum font size
 
             // --- Normalization and Regex Functions ---
             // هذه الدالة تستخدم لتوحيد النص عند البحث فقط (للمطابقة الدقيقة في الفلترة)
@@ -235,7 +258,7 @@
                         'أن رسول الله'
                     ];
 
-                    for (const phrase of hadithStartPhrases) {
+                    for (const phrase of hadithStartPhrases) { 
                         const index = hadithText.indexOf(phrase);
                         // إذا وجدنا عبارة تدل على بداية الحديث، والجزء الذي يسبقها ليس فارغاً (لتجنب الحالات التي تبدأ فيها العبارة من الصفر)
                         if (index !== -1 && index > 0) {
@@ -284,7 +307,7 @@
                                 <span class="text-sm font-medium text-gray-500">حديث رقم: ${hadith.id}</span>
                             </div>
                             ${narratorChain ? `<p class="text-md text-gray-700 narrator-color mb-2">${narratorChain}</p>` : ''}
-                            <p class="text-lg leading-relaxed arabic-hadith-font mb-4" id="hadith-text-${hadith.id}">${highlightedText}</p>
+                            <p class="arabic-hadith-font mb-4" style="font-size: ${currentFontSize}rem;" id="hadith-text-${hadith.id}">${highlightedText}</p>
                             <div class="absolute bottom-2 left-2 flex items-center">
                                 <button class="copy-button bg-gray-200 text-gray-700 p-2 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors text-sm" data-hadith-id="${hadith.id}" title="نسخ الحديث">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -358,6 +381,28 @@
                     searchInfo.textContent = `عرض ${displayCount} من ${allHadiths.length} حديث`;
                 }
             }
+
+
+            // --- Font Size Control ---
+            function applyFontSize() {
+                document.querySelectorAll('.arabic-hadith-font').forEach(element => {
+                    element.style.fontSize = `${currentFontSize}rem`;
+                });
+            }
+
+            decreaseFontBtn.addEventListener('click', () => {
+                if (currentFontSize > MIN_FONT_SIZE) {
+                    currentFontSize = parseFloat((currentFontSize - FONT_SIZE_STEP).toFixed(2));
+                    applyFontSize();
+                }
+            });
+
+            increaseFontBtn.addEventListener('click', () => {
+                if (currentFontSize < MAX_FONT_SIZE) {
+                    currentFontSize = parseFloat((currentFontSize + FONT_SIZE_STEP).toFixed(2));
+                    applyFontSize();
+                }
+            });
 
 
             // --- Event Handlers ---
