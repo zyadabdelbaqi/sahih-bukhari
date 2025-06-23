@@ -11,8 +11,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">\
-    <!-- ربط ملف manifest.json الخاص بـ PWA -->
-    <link rel="manifest" href="manifest.json">
     <style>
         /* تعريف الخطوط المحلية الجديدة */
         @font-face {
@@ -190,7 +188,7 @@
             <div class="flex items-center space-x-2 rtl:space-x-reverse">
                 <input type="text" id="searchInput"
                     class="flex-grow p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors"
-                    placeholder="ابحث عن حديث...">
+                    placeholder="ابحث عن حديث برقم أو نص...">
                 <button id="searchButton"
                     class="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -288,8 +286,6 @@
             const toggleBoldBtn = document.getElementById('toggleBoldBtn'); // زر تبديل الخط العريض
             const darkModeToggleBtn = document.getElementById('darkModeToggleBtn'); // زر تبديل الوضع الداكن
             const viewFavoritesBtn = document.getElementById('viewFavoritesBtn'); // زر عرض الأحاديث المفضلة
-            // تم إزالة مرجع زر وضع القراءة الخالي من التشتيت
-            // const distractionFreeModeToggleBtn = document.getElementById('distractionFreeModeToggleBtn'); 
             
             // --- State Management ---
             let allHadiths = []; // Stores all hadiths after fetch
@@ -298,7 +294,6 @@
             let displayCount = 0; // How many hadiths are currently rendered
             const HADITHS_PER_PAGE = 50; // Number of hadiths to load at a time
             let isFetching = false; // Flag to prevent multiple fetches
-            // تم زيادة حجم الخط الافتراضي والحد الأقصى للخط
             let currentFontSize = 1.25; // Initial font size in rem (زيادة طفيفة)
             const FONT_SIZE_STEP = 0.1; // Step for increasing/decreasing font size
             const MIN_FONT_SIZE = 0.9; // Minimum font size
@@ -306,8 +301,6 @@
             let currentLanguage = 'ar'; // اللغة الافتراضية
             let isBoldEnabled = false; // حالة الخط العريض
             let isDarkModeEnabled = false; // حالة الوضع الداكن
-            // تم إزالة متغير حالة وضع القراءة الخالي من التشتيت
-            // let isDistractionFreeModeEnabled = false; 
             let favoritedHadithIds = new Set(); // مجموعة لتخزين معرفات الأحاديث المفضلة
             let lastReadHadithId = null; // حالة آخر حديث مقروء
             let observer = null; // Intersection Observer instance
@@ -438,7 +431,6 @@
                     updateBoldToggleButton(); // تحديث زر الخط العريض عند التحميل
                     updateDarkModeToggleButton(); // تحديث زر الوضع الداكن عند التحميل
                     updateViewFavoritesButton(); // تحديث زر عرض المفضلة عند التحميل
-                    // تم إزالة استدعاء updateDistractionFreeModeButton();
 
                 } catch (error) {
                     console.error('Error fetching data:', error);
@@ -519,7 +511,7 @@
 
                         hadithCard.innerHTML = `
                             <div class="flex justify-between items-center mb-3 pb-3"> <!-- تم إزالة border-b هنا -->
-                                <span class="text-sm font-medium text-gray-500">${currentLanguage === 'ar' ? 'حديث رقم :' : 'Hadith No.:'} ${hadith.id}</span>
+                                <span class="text-sm font-medium text-gray-500">${currentLanguage === 'ar' ? 'حديث رقم:' : 'Hadith No.:'} ${hadith.id}</span>
                             </div>
                             <p class="${hadithTextClass} mb-0" style="font-size: ${currentFontSize}rem;" id="hadith-text-${hadith.id}">${displayedText}</p>
                             
@@ -748,8 +740,6 @@
                     toggleBoldBtn.title = isBoldEnabled ? 'إيقاف الخط العريض' : 'تبديل الخط العريض'; // تحديث العنوان
                     darkModeToggleBtn.title = isDarkModeEnabled ? 'إيقاف الوضع الداكن' : 'تبديل الوضع الداكن'; // تحديث العنوان
                     viewFavoritesBtn.title = isViewingFavorites ? 'عرض كل الأحاديث' : 'عرض الأحاديث المفضلة'; // تحديث العنوان
-                    // تم إزالة تحديث عنوان زر وضع القراءة الخالي من التشتيت
-                    // distractionFreeModeToggleBtn.title = isDistractionFreeModeEnabled ? 'إيقاف وضع القراءة الخالي من التشتيت' : 'وضع القراءة الخالي من التشتيت'; 
                     // Re-apply Arabic font class to .hadith-text elements
                     document.querySelectorAll('.hadith-text').forEach(element => {
                         element.classList.add('arabic-hadith-font');
@@ -769,8 +759,6 @@
                     toggleBoldBtn.title = isBoldEnabled ? 'Disable Bold' : 'Toggle Bold'; // تحديث العنوان
                     darkModeToggleBtn.title = isDarkModeEnabled ? 'Disable Dark Mode' : 'Toggle Dark Mode'; // تحديث العنوان
                     viewFavoritesBtn.title = isViewingFavorites ? 'View All Hadiths' : 'View Favorites'; // تحديث العنوان
-                    // تم إزالة تحديث عنوان زر وضع القراءة الخالي من التشتيت
-                    // distractionFreeModeToggleBtn.title = isDistractionFreeModeEnabled ? 'Disable Distraction-Free Mode' : 'Distraction-Free Reading Mode'; 
                     // Remove Arabic font class from .hadith-text elements
                     document.querySelectorAll('.hadith-text').forEach(element => {
                         element.classList.remove('arabic-hadith-font');
@@ -814,25 +802,6 @@
                 isDarkModeEnabled = !isDarkModeEnabled;
                 updateDarkModeToggleButton();
             });
-
-            // تم إزالة Distraction-Free Mode Functionality
-            // function updateDistractionFreeModeButton() {
-            //     if (isDistractionFreeModeEnabled) {
-            //         document.body.classList.add('distraction-free-mode-enabled');
-            //         document.documentElement.classList.add('distraction-free-mode-enabled'); // Apply to HTML as well
-            //     } else {
-            //         document.body.classList.remove('distraction-free-mode-enabled');
-            //         document.documentElement.classList.remove('distraction-free-mode-enabled');
-            //     }
-            //     distractionFreeModeToggleBtn.title = isDistractionFreeModeEnabled ? 
-            //         (currentLanguage === 'ar' ? 'إيقاف وضع القراءة الخالي من التشتيت' : 'Disable Distraction-Free Mode') : 
-            //         (currentLanguage === 'ar' ? 'وضع القراءة الخالي من التشتيت' : 'Distraction-Free Reading Mode');
-            // }
-
-            // distractionFreeModeToggleBtn.addEventListener('click', () => {
-            //     isDistractionFreeModeEnabled = !isDistractionFreeModeEnabled;
-            //     updateDistractionFreeModeButton();
-            // });
 
 
             // --- Favorites Functionality ---
@@ -960,19 +929,6 @@
 
             // --- Initial Load ---
             loadData();
-
-            // PWA: Register Service Worker
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/service-worker.js')
-                        .then(registration => {
-                            console.log('Service Worker registered:', registration);
-                        })
-                        .catch(error => {
-                            console.error('Service Worker registration failed:', error);
-                        });
-                });
-            }
         });
     </script>
 </body>
