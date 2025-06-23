@@ -6,15 +6,97 @@
     <title>صحيح البخاري - نسخة محسنة</title>
     <!-- استدعاء Tailwind CSS من CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- استدعاء خطوط Google Fonts -->
+    <!-- استدعاء خطوط Google Fonts (يمكن إزالتها إذا لم تعد مستخدمة) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">\
+    <!-- ربط ملف manifest.json الخاص بـ PWA -->
+    <link rel="manifest" href="manifest.json">
     <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
+        /* تعريف الخطوط المحلية الجديدة */
+        @font-face {
+            font-family: 'Kitab Base';
+            src: url('kitab-base.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap; /* لتحسين عرض الخط أثناء التحميل */
         }
+
+        @font-face {
+            font-family: 'Kitab Base';
+            src: url('kitab-base-bold.woff2') format('woff2');
+            font-weight: bold; /* لربطه بالوزن bold */
+            font-style: normal;
+            font-display: swap;
+        }
+
+        body {
+            font-family: 'Kitab Base', 'Tajawal', sans-serif; /* استخدام الخط الجديد كأولوية */
+        }
+        /* كلاس لتطبيق الخط العريض على الـ body */
+        body.font-bold-enabled {
+            font-weight: bold;
+        }
+
+        /* ----- Dark Mode styles ----- */
+        body.dark-mode-enabled {
+            background-color: #121212; /* خلفية داكنة جداً */
+            color: #e0e0e0; /* نص فاتح للقراءة */
+        }
+
+        body.dark-mode-enabled .bg-gray-100 { /* خلفية رأس الصفحة (sticky header) */
+            background-color: #121212;
+        }
+        body.dark-mode-enabled .text-gray-800 { /* لون النص الافتراضي */
+            color: #e0e0e0;
+        }
+        body.dark-mode-enabled .bg-white { /* خلفية بطاقات الحديث */
+            background-color: #1e1e1e;
+        }
+        body.dark-mode-enabled .text-gray-700 { /* لون نص العناوين وأزرار التحكم */
+            color: #e0e0e0;
+        }
+        body.dark-mode-enabled .text-gray-500 { /* لون النصوص الثانوية مثل رقم الحديث ومعلومات البحث */
+            color: #b0b0b0;
+        }
+        body.dark-mode-enabled .border-gray-300 { /* إطار مربع البحث */
+            border-color: #424242;
+        }
+        body.dark-mode-enabled #searchInput { /* تنسيق مربع البحث تحديداً */
+            background-color: #212121;
+            color: #e0e0e0;
+        }
+        body.dark-mode-enabled #searchInput::placeholder { /* لون النص داخل مربع البحث */
+            color: #b0b0b0;
+        }
+        body.dark-mode-enabled #searchInput:focus { /* لون الإطار عند التركيز على مربع البحث */
+            border-color: #64b5f6; /* أزرق أفتح للتباين */
+        }
+        body.dark-mode-enabled .bg-gray-200 { /* خلفية الأزرار الصغيرة (حجم الخط، عريض، إلخ) */
+            background-color: #333333;
+            color: #e0e0e0;
+        }
+        body.dark-mode-enabled .bg-gray-200:hover {
+            background-color: #424242;
+        }
+        body.dark-mode-enabled .bg-blue-500 { /* خلفية الأزرار الزرقاء الرئيسية (بحث، تبديل لغة، العودة للأعلى) */
+            background-color: #42a5f5; /* أزرق أفتح للوضع الداكن */
+        }
+        body.dark-mode-enabled .bg-blue-500:hover {
+            background-color: #2196f3; /* لون أغمق قليلاً عند التمرير */
+        }
+        body.dark-mode-enabled .focus\:ring-blue-500 { /* لون حلقة التركيز للأزرار الزرقاء */
+            --tw-ring-color: #64b5f6; /* لون حلقة أفتح */
+        }
+        body.dark-mode-enabled .border-b { /* الخط الفاصل تحت رقم الحديث */
+            border-color: #333333;
+        }
+        body.dark-mode-enabled .narrator-color { /* لون نص الراوي */
+            color: #ffb74d; /* لون برتقالي دافئ للتباين */
+        }
+        /* ----- End Dark Mode styles ----- */
+
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -36,11 +118,15 @@
         /* فئة جديدة للون البني المصفر لاسم الراوي */
         .narrator-color {
             color: #A0522D; /* Sienna - بني مصفر */
-            font-weight: 600; /* جعل النص أكثر وضوحًا */
+            font-size: 1.05rem; /* حجم خط أكبر لاسم الراوي */
         }
         .arabic-hadith-font {
-            font-family: 'Amiri', serif;
-            font-size: 1.125rem; /* Default text size: text-lg */
+            font-family: 'Kitab Base', 'Amiri', serif; /* استخدام الخط الجديد هنا أيضًا */
+            /* Default text size: text-lg, but controlled by JS now */
+        }
+        /* Style for the hadith text that will have its font size controlled by JS */
+        .hadith-text {
+            font-size: 1.125rem; /* Default font size, overridden by JS */
         }
         /* مؤشر التحميل عند التمرير */
         #infinite-loader.hidden {
@@ -50,9 +136,8 @@
         .copy-message {
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
-            position: absolute; /* Added for correct positioning relative to parent */
-            bottom: 8px; /* Adjusted position */
-            left: 50px; /* Adjusted position, will be right in RTL */
+            position: absolute; 
+            /* Positioning relative to its new parent: -top-8, left-1/2, -translate-x-1/2 for centering */
             background-color: rgba(0, 128, 0, 0.8); /* Green background */
             color: white;
             padding: 4px 8px;
@@ -60,9 +145,32 @@
             font-size: 0.8rem;
             white-space: nowrap; /* Prevent wrapping */
             z-index: 10; /* Ensure it's above other elements */
+            pointer-events: none; /* Make it not interfere with clicks */
+            transform: translateX(-50%); /* Centering for left: 1/2 */
+            top: -32px; /* Position above the button */
+            left: 50%; /* Center horizontally */
         }
         .copy-message.show {
             opacity: 1;
+        }
+
+        /* RTL adjustments for copy message are no longer needed as it's centered relative to its parent */
+
+        /* Favorite button styles */
+        .favorite-button.favorited svg {
+            fill: #FFD700; /* Gold color for favorited state */
+            stroke: #FFD700;
+        }
+        /* Dark mode for favorited star */
+        body.dark-mode-enabled .favorite-button.favorited svg {
+            fill: #FFEA00; /* Brighter gold in dark mode */
+            stroke: #FFEA00;
+        }
+        .favorite-button svg {
+            stroke: #888; /* Default stroke color */
+        }
+        body.dark-mode-enabled .favorite-button svg {
+            stroke: #b0b0b0; /* Lighter stroke in dark mode */
         }
     </style>
 </head>
@@ -88,13 +196,18 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <span class="mr-2 hidden md:inline">بحث</span>
+                    <span class="mr-2 hidden md:inline" id="search-button-text">بحث</span>
+                </button>
+                <!-- زر تبديل اللغة - تم نقله بجانب زر البحث -->
+                <button id="langToggle"
+                    class="bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors flex items-center justify-center">
+                    <span id="lang-toggle-text">EN</span>
                 </button>
             </div>
             <!-- معلومات البحث وأزرار الخط في سطر واحد ومتمركزة -->
-            <div class="flex justify-center items-center mt-2 text-sm space-x-4 rtl:space-x-reverse">
-                <div id="search-info" class="text-gray-500"></div>
-                <div class="flex space-x-2 rtl:space-x-reverse">
+            <div class="flex justify-center items-center mt-2 text-sm space-x-4 rtl:space-x-reverse flex-wrap">
+                <div id="search-info" class="text-gray-500 mb-2 md:mb-0"></div>
+                <div class="flex space-x-2 rtl:space-x-reverse mb-2 md:mb-0">
                     <button id="increase-font"
                         class="bg-gray-200 text-gray-700 p-1 rounded-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors"
                         title="تكبير الخط">
@@ -105,6 +218,29 @@
                         title="تصغير الخط">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
                     </button>
+                    <!-- زر تبديل الخط العريض -->
+                    <button id="toggleBoldBtn"
+                        class="bg-gray-200 text-gray-700 p-1 rounded-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors"
+                        title="تبديل الخط العريض">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>
+                    </button>
+                    <!-- زر تبديل الوضع الداكن -->
+                    <button id="darkModeToggleBtn"
+                        class="bg-gray-200 text-gray-700 p-1 rounded-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors"
+                        title="تبديل الوضع الداكن">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
+                    <!-- زر عرض الأحاديث المفضلة -->
+                    <button id="viewFavoritesBtn"
+                        class="bg-gray-200 text-gray-700 p-1 rounded-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors"
+                        title="عرض الأحاديث المفضلة">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.974 2.887a1 1 0 00-.364 1.118l1.519 4.674c.3.921-.755 1.688-1.539 1.118l-3.974-2.887a1 1 0 00-1.176 0l-3.974 2.887c-.784.57-1.838-.197-1.539-1.118l1.519-4.674a1 1 0 00-.364-1.118L2.92 10.091c-.783-.57-.381-1.81.588-1.81h4.915a1 1 0 00.95-.69l1.519-4.674z" />
+                        </svg>
+                    </button>
+                    <!-- تم إزالة زر وضع القراءة الخالي من التشتيت -->
                 </div>
             </div>
         </div>
@@ -144,10 +280,17 @@
             const initialLoader = document.getElementById('initial-loader');
             const infiniteLoader = document.getElementById('infinite-loader');
             const backToTopBtn = document.getElementById('back-to-top');
-            // Font size buttons
             const decreaseFontBtn = document.getElementById('decrease-font');
             const increaseFontBtn = document.getElementById('increase-font');
-
+            const langToggle = document.getElementById('langToggle'); // زر تبديل اللغة
+            const langToggleText = document.getElementById('lang-toggle-text'); // نص زر تبديل اللغة
+            const searchButtonText = document.getElementById('search-button-text'); // نص زر البحث
+            const toggleBoldBtn = document.getElementById('toggleBoldBtn'); // زر تبديل الخط العريض
+            const darkModeToggleBtn = document.getElementById('darkModeToggleBtn'); // زر تبديل الوضع الداكن
+            const viewFavoritesBtn = document.getElementById('viewFavoritesBtn'); // زر عرض الأحاديث المفضلة
+            // تم إزالة مرجع زر وضع القراءة الخالي من التشتيت
+            // const distractionFreeModeToggleBtn = document.getElementById('distractionFreeModeToggleBtn'); 
+            
             // --- State Management ---
             let allHadiths = []; // Stores all hadiths after fetch
             let currentHadiths = []; // Stores currently displayed hadiths (can be all or filtered)
@@ -155,10 +298,19 @@
             let displayCount = 0; // How many hadiths are currently rendered
             const HADITHS_PER_PAGE = 50; // Number of hadiths to load at a time
             let isFetching = false; // Flag to prevent multiple fetches
-            let currentFontSize = 1.125; // Initial font size in rem (corresponds to text-lg in Tailwind)
+            // تم زيادة حجم الخط الافتراضي والحد الأقصى للخط
+            let currentFontSize = 1.25; // Initial font size in rem (زيادة طفيفة)
             const FONT_SIZE_STEP = 0.1; // Step for increasing/decreasing font size
             const MIN_FONT_SIZE = 0.9; // Minimum font size
-            const MAX_FONT_SIZE = 1.5; // Maximum font size
+            let MAX_FONT_SIZE = 1.8; // Maximum font size (زيادة طفيفة)
+            let currentLanguage = 'ar'; // اللغة الافتراضية
+            let isBoldEnabled = false; // حالة الخط العريض
+            let isDarkModeEnabled = false; // حالة الوضع الداكن
+            // تم إزالة متغير حالة وضع القراءة الخالي من التشتيت
+            // let isDistractionFreeModeEnabled = false; 
+            let favoritedHadithIds = new Set(); // مجموعة لتخزين معرفات الأحاديث المفضلة
+            let lastReadHadithId = null; // حالة آخر حديث مقروء
+            let observer = null; // Intersection Observer instance
 
             // --- Normalization and Regex Functions ---
             // هذه الدالة تستخدم لتوحيد النص عند البحث فقط (للمطابقة الدقيقة في الفلترة)
@@ -212,6 +364,26 @@
                 return new RegExp(pattern, 'gi'); 
             }
             
+            // Debounce function (Helper)
+            function debounce(func, delay) {
+                let timeout;
+                return function(...args) {
+                    const context = this;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(context, args), delay);
+                };
+            }
+
+            const saveLastReadPosition = debounce((hadithId) => {
+                // حفظ آخر حديث مقروء فقط عندما نكون في عرض كل الأحاديث
+                if (hadithId && !isViewingFavorites) {
+                    localStorage.setItem('lastReadHadithId', hadithId);
+                    lastReadHadithId = hadithId;
+                    // console.log('Last read hadith saved:', hadithId); // For debugging
+                }
+            }, 500); // حفظ بعد نصف ثانية من عدم التمرير
+
+
             // --- Data Fetching and Initialization ---
             async function loadData() {
                 try {
@@ -221,20 +393,52 @@
                     const data = await response.json();
                     
                     // Pre-process and normalize data once on load
-                    // نستخدم normalizedArabic هنا للبحث فقط في مصفوفة allHadiths، وليس للعرض
-                    allHadiths = data.hadiths.map(h => ({
-                        ...h,
-                        originalArabic: h.arabic, // حفظ النص الأصلي للتمييز
-                        normalizedArabic: normalizeArabicForSearch(h.arabic) // نسخة موحدة للبحث
-                    }));
-                    
-                    data.chapters.forEach(chapter => {
-                        chapterMap.set(chapter.id, { arabic: chapter.arabic });
+                    allHadiths = data.hadiths.map(h => {
+                        let processedEnglish = {}; // Initialize as an empty object
+                        let englishTextForSearch = '';
+
+                        if (typeof h.english === 'string') {
+                            englishTextForSearch = h.english;
+                            // If it's a string, we treat it as the text, and there's no separate narrator field.
+                            processedEnglish = { text: h.english, narrator: '' }; 
+                        } else if (typeof h.english === 'object' && h.english !== null) {
+                            processedEnglish = { ...h.english }; // Copy the entire object to preserve narrator
+                            englishTextForSearch = h.english.text || ''; // Get the text part for search
+                        }
+
+                        return {
+                            ...h,
+                            originalArabic: h.arabic, // حفظ النص الأصلي للتمييز
+                            normalizedArabic: normalizeArabicForSearch(h.arabic), // نسخة موحدة للبحث العربي
+                            english: processedEnglish, // Store the English object (or text+empty narrator if it was string)
+                            englishTextForSearch: englishTextForSearch // A dedicated field for filtering/highlighting
+                        };
                     });
                     
+                    data.chapters.forEach(chapter => {
+                        chapterMap.set(chapter.id, { arabic: chapter.arabic, english: chapter.english });
+                    });
+                    
+                    // تحميل الأحاديث المفضلة من localStorage
+                    const storedFavorites = localStorage.getItem('favoritedHadiths');
+                    if (storedFavorites) {
+                        favoritedHadithIds = new Set(JSON.parse(storedFavorites));
+                    }
+
+                    // تحميل آخر حديث مقروء من localStorage
+                    const storedLastRead = localStorage.getItem('lastReadHadithId');
+                    if (storedLastRead) {
+                        lastReadHadithId = parseInt(storedLastRead);
+                    }
+
                     currentHadiths = allHadiths;
                     initialLoader.classList.add('hidden');
                     resetAndDisplayHadiths();
+                    updateLangToggleButton(); // تحديث اللغة الافتراضية عند التحميل
+                    updateBoldToggleButton(); // تحديث زر الخط العريض عند التحميل
+                    updateDarkModeToggleButton(); // تحديث زر الوضع الداكن عند التحميل
+                    updateViewFavoritesButton(); // تحديث زر عرض المفضلة عند التحميل
+                    // تم إزالة استدعاء updateDistractionFreeModeButton();
 
                 } catch (error) {
                     console.error('Error fetching data:', error);
@@ -247,74 +451,99 @@
                 isFetching = true;
                 infiniteLoader.classList.remove('hidden');
 
-                // دالة جديدة لاستخراج سلسلة الرواة من نص الحديث
-                function getNarratorChain(hadithText) {
-                    const hadithStartPhrases = [
-                        'قال رسول الله صلى الله عليه وسلم',
-                        'قال رسول الله',
-                        'عن النبي صلى الله عليه وسلم',
-                        'عن النبي',
-                        'فقال رسول الله',
-                        'أن رسول الله'
-                    ];
-
-                    for (const phrase of hadithStartPhrases) { 
-                        const index = hadithText.indexOf(phrase);
-                        // إذا وجدنا عبارة تدل على بداية الحديث، والجزء الذي يسبقها ليس فارغاً (لتجنب الحالات التي تبدأ فيها العبارة من الصفر)
-                        if (index !== -1 && index > 0) {
-                            let chain = hadithText.substring(0, index).trim();
-                            // يمكن إضافة منطق لتنظيف السلسلة أو التحقق من صحتها هنا
-                            return chain;
-                        }
-                    }
-                    return ''; // لم يتم العثور على سلسلة رواة واضحة
-                }
-
                 requestAnimationFrame(() => {
                     const fragment = document.createDocumentFragment();
                     const endIndex = Math.min(startIndex + HADITHS_PER_PAGE, hadithsToRender.length);
 
+                    // Disconnect old observer if exists
+                    if (observer) {
+                        observer.disconnect();
+                    }
+                    
                     for (let i = startIndex; i < endIndex; i++) {
                         const hadith = hadithsToRender[i];
                         if (!hadith) continue;
                         
                         const chapterData = chapterMap.get(hadith.chapterId);
-                        const chapterName = chapterData ? chapterData.arabic : 'غير معروف'; // Chapter name (not used in rendering due to user request)
+                        // تحديد نص الفصل (الكتاب) بناءً على اللغة الحالية
+                        const chapterName = chapterData ? (currentLanguage === 'ar' ? chapterData.arabic : chapterData.english) : 'Unknown';
                         
+                        const isFavorited = favoritedHadithIds.has(hadith.id);
+                        const favoriteClass = isFavorited ? 'favorited' : '';
+                        const favoriteTitle = currentLanguage === 'ar' ? 
+                                              (isFavorited ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة') :
+                                              (isFavorited ? 'Remove from Favorites' : 'Add to Favorites');
+
                         const hadithCard = document.createElement('div');
                         hadithCard.className = 'hadith-card bg-white p-4 md:p-6 rounded-lg shadow-md transition-shadow hover:shadow-lg relative'; // Added 'relative' for positioning copy message
                         hadithCard.dataset.hadithId = hadith.id; // Add data attribute
 
                         const searchTerm = searchInput.value.trim();
-                        // نستخدم النص الأصلي (hadith.originalArabic) هنا لتمييز كلمات البحث
-                        let highlightedText = hadith.originalArabic; 
-                        
-                        // تمييز كلمة البحث إذا كانت موجودة
-                        if(searchTerm) {
-                            const highlightRegex = createArabicHighlightRegex(searchTerm);
-                            if(highlightRegex) {
-                                // استخدام فئة "highlight" لتمييز النص المطابق
-                                highlightedText = highlightedText.replace(highlightRegex, `<span class="highlight">$&</span>`);
+                        let displayedText = ''; 
+                        let hadithTextClass = 'hadith-text'; // Apply the general hadith-text class
+                        let narratorDisplayHTML = ''; // Variable to hold the narrator HTML
+
+                        // Get narrator name from English data and clean it
+                        let narratorName = hadith.english && hadith.english.narrator ? 
+                                           hadith.english.narrator
+                                                    .replace(/^(Narrated by |Narrated )/i, '')
+                                                    .trim()
+                                                    .replace(/:$/, '') // Remove trailing colon
+                                           : ''; // Use empty string if no narrator
+
+                        // Determine the text to display and highlight based on language
+                        if (currentLanguage === 'ar') {
+                            displayedText = hadith.originalArabic;
+                            hadithTextClass += ' arabic-hadith-font'; // Add Arabic font class if it's Arabic
+                            if (searchTerm) {
+                                const highlightRegex = createArabicHighlightRegex(searchTerm);
+                                if (highlightRegex) {
+                                    displayedText = displayedText.replace(highlightRegex, `<span class="highlight">$&</span>`);
+                                }
+                            }
+                        } else { // English
+                            // Use englishTextForSearch for display as well, it contains the main English text
+                            displayedText = hadith.englishTextForSearch; 
+                            // No specific font class for English, just use 'hadith-text'
+                            if (searchTerm) {
+                                // For English, a simple case-insensitive regex is enough
+                                const englishHighlightRegex = new RegExp(searchTerm, 'gi');
+                                displayedText = displayedText.replace(englishHighlightRegex, `<span class="highlight">$&</span>`);
                             }
                         }
-
-                        // استخراج وعرض سلسلة الرواة في سطر منفصل
-                        const narratorChain = getNarratorChain(hadith.originalArabic);
                         
+                        // Construct the narrator HTML. Always include the <p> tag for consistency.
+                        narratorDisplayHTML = `<p class="narrator-color">
+                                                ${currentLanguage === 'ar' ? 'الراوي :' : 'Narrator :'} ${narratorName || (currentLanguage === 'ar' ? 'غير معروف' : 'Unknown')}
+                                              </p>`;
+
                         hadithCard.innerHTML = `
-                            <div class="flex justify-between items-center mb-3 pb-3 border-b">
-                                <!-- تم إزالة عرض اسم الفصل (الكتاب) هنا بناءً على طلب المستخدم -->
-                                <span class="text-sm font-medium text-gray-500">حديث رقم: ${hadith.id}</span>
+                            <div class="flex justify-between items-center mb-3 pb-3"> <!-- تم إزالة border-b هنا -->
+                                <span class="text-sm font-medium text-gray-500">${currentLanguage === 'ar' ? 'حديث رقم :' : 'Hadith No.:'} ${hadith.id}</span>
                             </div>
-                            ${narratorChain ? `<p class="text-md text-gray-700 narrator-color mb-2">${narratorChain}</p>` : ''}
-                            <p class="arabic-hadith-font mb-4" style="font-size: ${currentFontSize}rem;" id="hadith-text-${hadith.id}">${highlightedText}</p>
-                            <div class="absolute bottom-2 left-2 flex items-center">
-                                <button class="copy-button bg-gray-200 text-gray-700 p-2 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors text-sm" data-hadith-id="${hadith.id}" title="نسخ الحديث">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m-4 3H9m10 0h-3m-7 0H4" />
-                                    </svg>
-                                </button>
-                                <span id="copy-message-${hadith.id}" class="copy-message">تم النسخ!</span>
+                            <p class="${hadithTextClass} mb-0" style="font-size: ${currentFontSize}rem;" id="hadith-text-${hadith.id}">${displayedText}</p>
+                            
+                            <!-- New Footer Section for Narrator and Copy/Favorite Buttons -->
+                            <div class="flex items-center justify-between pt-2">
+                                ${narratorDisplayHTML} <!-- Narrator goes here -->
+                                
+                                <div class="flex space-x-2 rtl:space-x-reverse relative"> <!-- Container for buttons and copy message -->
+                                    <button class="copy-button bg-gray-200 text-gray-700 p-2 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors text-sm" data-hadith-id="${hadith.id}" title="${currentLanguage === 'ar' ? 'نسخ الحديث' : 'Copy Hadith'}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m-4 3H9m10 0h-3m-7 0H4" />
+                                        </svg>
+                                    </button>
+                                    <span id="copy-message-${hadith.id}" class="copy-message">
+                                        ${currentLanguage === 'ar' ? 'تم النسخ!' : 'Copied!'}
+                                    </span>
+
+                                    <!-- Favorite Button -->
+                                    <button class="favorite-button bg-gray-200 text-gray-700 p-2 rounded-full hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 transition-colors text-sm ${favoriteClass}" data-hadith-id="${hadith.id}" title="${favoriteTitle}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="${isFavorited ? 'currentColor' : 'none'}" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.974 2.887a1 1 0 00-.364 1.118l1.519 4.674c.3.921-.755 1.688-1.539 1.118l-3.974-2.887a1 1 0 00-1.176 0l-3.974 2.887c-.784.57-1.838-.197-1.539-1.118l1.519-4.674a1 1 0 00-.364-1.118L2.92 10.091c-.783-.57-.381-1.81.588-1.81h4.915a1 1 0 00.95-.69l1.519-4.674z" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         `;
                         fragment.appendChild(hadithCard);
@@ -323,6 +552,40 @@
                     hadithsContainer.appendChild(fragment);
                     displayCount = endIndex;
                     
+                    // إعادة ربط Intersection Observer لآخر موضع قراءة
+                    // فقط إذا لم نكن في عرض المفضلة ونعرض كل الأحاديث
+                    if (!isViewingFavorites && hadithsToRender === allHadiths && hadithsToRender.length > 0) {
+                        if (observer) {
+                            observer.disconnect();
+                        }
+                        observer = new IntersectionObserver((entries) => {
+                            entries.forEach(entry => {
+                                // إذا كان الحديث مرئيًا في الجزء العلوي من الشاشة (أول 10%)
+                                if (entry.isIntersecting && entry.intersectionRatio > 0.1 && entry.boundingClientRect.top >= 0) {
+                                    // احصل على الحديث الأعلى ظهورًا بين تلك المتقاطعة
+                                    const allVisibleHadiths = Array.from(document.querySelectorAll('.hadith-card'))
+                                        .filter(card => {
+                                            const rect = card.getBoundingClientRect();
+                                            // اعتبار الحديث مرئيًا إذا كان الجزء العلوي منه ضمن أو أعلى من الحافة العلوية لنافذة العرض
+                                            // والحد السفلي له مرئي أيضًا (ليس خارج الشاشة من الأسفل)
+                                            return rect.top >= 0 && rect.bottom > 0;
+                                        })
+                                        .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top); // الترتيب حسب الموضع العلوي
+
+                                    if (allVisibleHadiths.length > 0) {
+                                        const topmostHadithId = parseInt(allVisibleHadiths[0].dataset.hadithId);
+                                        saveLastReadPosition(topmostHadithId);
+                                    }
+                                }
+                            });
+                        }, { threshold: 0.1, rootMargin: '0px 0px -90% 0px' });
+                        
+                        document.querySelectorAll('.hadith-card').forEach(card => {
+                            observer.observe(card);
+                        });
+                    }
+
+
                     // Add event listeners to the new copy buttons
                     document.querySelectorAll('.copy-button').forEach(button => {
                         button.onclick = function() {
@@ -343,8 +606,6 @@
                                 const messageElement = document.getElementById(`copy-message-${hadithId}`);
                                 if (messageElement) {
                                     messageElement.classList.add('show');
-                                    // Adjust message position dynamically based on button position if needed
-                                    // For simplicity, fixed relative positioning is used in CSS
                                     setTimeout(() => {
                                         messageElement.classList.remove('show');
                                     }, 2000); // Hide after 2 seconds
@@ -352,6 +613,33 @@
                             }
                         };
                     });
+
+                    // Add event listeners to the new favorite buttons
+                    document.querySelectorAll('.favorite-button').forEach(button => {
+                        button.onclick = function() {
+                            const hadithId = parseInt(this.dataset.hadithId); // تأكد من أنه رقم
+                            const svgElement = this.querySelector('svg');
+
+                            if (favoritedHadithIds.has(hadithId)) {
+                                favoritedHadithIds.delete(hadithId);
+                                this.classList.remove('favorited');
+                                svgElement.setAttribute('fill', 'none');
+                                this.title = currentLanguage === 'ar' ? 'إزالة من المفضلة' : 'Add to Favorites';
+                            } else {
+                                favoritedHadithIds.add(hadithId);
+                                this.classList.add('favorited');
+                                svgElement.setAttribute('fill', 'currentColor');
+                                this.title = currentLanguage === 'ar' ? 'إزالة من المفضلة' : 'Remove from Favorites';
+                            }
+                            localStorage.setItem('favoritedHadiths', JSON.stringify(Array.from(favoritedHadithIds)));
+                            
+                            // If currently viewing favorites, re-render to reflect removal
+                            if (isViewingFavorites) {
+                                filterAndDisplayFavorites(); // Re-filter and display
+                            }
+                        };
+                    });
+
 
                     infiniteLoader.classList.add('hidden');
                     isFetching = false;
@@ -362,30 +650,69 @@
             function resetAndDisplayHadiths() {
                 displayCount = 0;
                 hadithsContainer.innerHTML = '';
+                // Disconnect observer when clearing content
+                if (observer) {
+                    observer.disconnect();
+                    observer = null; // Clear the observer instance
+                }
                 // Scroll to top when resetting and displaying hadiths after a search
                 window.scrollTo({ top: 0, behavior: 'smooth' }); 
                 renderHadiths(0, currentHadiths);
+                applyFontSize(); // Apply font size after re-rendering
+
+                // New logic: Scroll to last read position ONLY if returning from favorites
+                // and we are back to viewing all hadiths and a lastReadHadithId exists.
+                // يتم تطبيق التمرير بفاصل زمني لضمان تحميل العناصر
+                if (!isViewingFavorites && lastReadHadithId !== null && currentHadiths === allHadiths) {
+                    setTimeout(() => {
+                        const targetElement = document.querySelector(`[data-hadith-id="${lastReadHadithId}"]`);
+                        if (targetElement) {
+                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 300); // 300ms delay to allow elements to render
+                }
             }
 
             function updateSearchInfo() {
-                const searchTerm = searchInput.value.trim();
+                const searchTerm = searchInput.value.trim().toLowerCase(); // Normalize search term
+                const totalHadithsCount = allHadiths.length; // No change in count based on language
+
                  if (currentHadiths.length === 0) {
-                        hadithsContainer.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">لا توجد نتائج تطابق بحثك.</div>`;
-                        searchInfo.textContent = 'تم العثور على 0 نتيجة.';
-                        return;
+                    if (isViewingFavorites && favoritedHadithIds.size > 0) {
+                        // If viewing favorites but currentHadiths is empty, it means no favorites match the search term
+                        searchInfo.textContent = currentLanguage === 'ar' ? 
+                            `لا توجد أحاديث مفضلة تطابق بحثك "${searchTerm}".` : 
+                            `No favorited hadiths match your search "${searchTerm}".`;
+                        hadithsContainer.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">${currentLanguage === 'ar' ? 'لا توجد أحاديث مفضلة تطابق بحثك.' : 'No favorited hadiths match your search.'}</div>`;
+                    } else if (isViewingFavorites && favoritedHadithIds.size === 0) {
+                         // If viewing favorites and no favorites exist at all
+                         searchInfo.textContent = currentLanguage === 'ar' ? 'لا توجد أحاديث مفضلة حتى الآن.' : 'No favorited hadiths yet.';
+                         hadithsContainer.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">${currentLanguage === 'ar' ? 'لا توجد أحاديث مفضلة حتى الآن. انقر على أيقونة النجمة بجانب الحديث لإضافته للمفضلة.' : 'No favorited hadiths yet. Click the star icon next to a hadith to add it to your favorites.'}</div>`;
                     }
+                    else {
+                        // No search term and no hadiths found (e.g., initial load error)
+                        hadithsContainer.innerHTML = `<div class="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">${currentLanguage === 'ar' ? 'لا توجد نتائج تطابق بحثك.' : 'No results found matching your search.'}</div>`;
+                        searchInfo.textContent = currentLanguage === 'ar' ? 'تم العثور على 0 نتيجة.' : '0 results found.';
+                    }
+                    return;
+                }
 
                 if (searchTerm) {
-                    searchInfo.textContent = `عرض ${displayCount} من ${currentHadiths.length} نتيجة لكلمة "${searchTerm}"`;
+                    searchInfo.textContent = currentLanguage === 'ar' ? 
+                        `عرض ${displayCount} من ${currentHadiths.length} نتيجة لكلمة "${searchTerm}"` :
+                        `Displaying ${displayCount} of ${currentHadiths.length} results for "${searchTerm}"`;
                 } else {
-                    searchInfo.textContent = `عرض ${displayCount} من ${allHadiths.length} حديث`;
+                    searchInfo.textContent = currentLanguage === 'ar' ? 
+                        `عرض ${displayCount} من ${currentHadiths.length} حديث ${isViewingFavorites ? '(مفضلة)' : ''}` :
+                        `Displaying ${displayCount} of ${currentHadiths.length} hadiths ${isViewingFavorites ? '(Favorites)' : ''}`;
                 }
             }
 
 
             // --- Font Size Control ---
             function applyFontSize() {
-                document.querySelectorAll('.arabic-hadith-font').forEach(element => {
+                // Apply font size to all elements with the 'hadith-text' class
+                document.querySelectorAll('.hadith-text').forEach(element => {
                     element.style.fontSize = `${currentFontSize}rem`;
                 });
             }
@@ -404,18 +731,178 @@
                 }
             });
 
-
-            // --- Event Handlers ---
-            function executeSearch() {
-                const searchTerm = searchInput.value.trim();
-                
-                if (!searchTerm) {
-                    currentHadiths = allHadiths;
+            // --- Language Toggle Functionality ---
+            function updateLangToggleButton() {
+                if (currentLanguage === 'ar') {
+                    document.documentElement.lang = 'ar';
+                    document.documentElement.dir = 'rtl';
+                    langToggleText.textContent = 'EN'; // Changed to EN
+                    searchInput.placeholder = 'ابحث عن حديث برقم أو نص...'; // Updated placeholder
+                    searchButtonText.textContent = 'بحث';
+                    document.querySelector('h1').textContent = 'صحيح البخاري';
+                    document.querySelector('header p').textContent = 'تصفح وابحث في أحاديث الرسول صلى الله عليه وسلم';
+                    initialLoader.querySelector('p').textContent = 'جارٍ تحميل الأحاديث...';
+                    backToTopBtn.title = 'العودة إلى الأعلى';
+                    increaseFontBtn.title = 'تكبير الخط';
+                    decreaseFontBtn.title = 'تصغير الخط';
+                    toggleBoldBtn.title = isBoldEnabled ? 'إيقاف الخط العريض' : 'تبديل الخط العريض'; // تحديث العنوان
+                    darkModeToggleBtn.title = isDarkModeEnabled ? 'إيقاف الوضع الداكن' : 'تبديل الوضع الداكن'; // تحديث العنوان
+                    viewFavoritesBtn.title = isViewingFavorites ? 'عرض كل الأحاديث' : 'عرض الأحاديث المفضلة'; // تحديث العنوان
+                    // تم إزالة تحديث عنوان زر وضع القراءة الخالي من التشتيت
+                    // distractionFreeModeToggleBtn.title = isDistractionFreeModeEnabled ? 'إيقاف وضع القراءة الخالي من التشتيت' : 'وضع القراءة الخالي من التشتيت'; 
+                    // Re-apply Arabic font class to .hadith-text elements
+                    document.querySelectorAll('.hadith-text').forEach(element => {
+                        element.classList.add('arabic-hadith-font');
+                    });
                 } else {
-                    const normalizedSearchTerm = normalizeArabicForSearch(searchTerm);
-                    currentHadiths = allHadiths.filter(hadith =>
-                        hadith.normalizedArabic.includes(normalizedSearchTerm)
-                    );
+                    document.documentElement.lang = 'en';
+                    document.documentElement.dir = 'ltr';
+                    langToggleText.textContent = 'AR'; // Changed to AR
+                    searchInput.placeholder = 'Search for a hadith by number or text...'; // Updated placeholder
+                    searchButtonText.textContent = 'Search';
+                    document.querySelector('h1').textContent = 'Sahih al-Bukhari';
+                    document.querySelector('header p').textContent = 'Browse and search the sayings of Prophet Muhammad (peace be upon him)';
+                    initialLoader.querySelector('p').textContent = 'Loading hadiths...';
+                    backToTopBtn.title = 'Back to Top';
+                    increaseFontBtn.title = 'Increase Font Size';
+                    decreaseFontBtn.title = 'Decrease Font Size';
+                    toggleBoldBtn.title = isBoldEnabled ? 'Disable Bold' : 'Toggle Bold'; // تحديث العنوان
+                    darkModeToggleBtn.title = isDarkModeEnabled ? 'Disable Dark Mode' : 'Toggle Dark Mode'; // تحديث العنوان
+                    viewFavoritesBtn.title = isViewingFavorites ? 'View All Hadiths' : 'View Favorites'; // تحديث العنوان
+                    // تم إزالة تحديث عنوان زر وضع القراءة الخالي من التشتيت
+                    // distractionFreeModeToggleBtn.title = isDistractionFreeModeEnabled ? 'Disable Distraction-Free Mode' : 'Distraction-Free Reading Mode'; 
+                    // Remove Arabic font class from .hadith-text elements
+                    document.querySelectorAll('.hadith-text').forEach(element => {
+                        element.classList.remove('arabic-hadith-font');
+                    });
+                }
+                // إعادة تشغيل البحث لتحديث النصوص المعروضة وحالة الأزرار
+                executeSearch(); 
+                applyFontSize(); // Apply font size after updating language and re-rendering
+            }
+
+            // --- Bold Toggle Functionality ---
+            function updateBoldToggleButton() {
+                if (isBoldEnabled) {
+                    document.body.classList.add('font-bold-enabled');
+                } else {
+                    document.body.classList.remove('font-bold-enabled');
+                }
+                toggleBoldBtn.title = isBoldEnabled ? 
+                    (currentLanguage === 'ar' ? 'إيقاف الخط العريض' : 'Disable Bold') : 
+                    (currentLanguage === 'ar' ? 'تبديل الخط العريض' : 'Toggle Bold');
+            }
+
+            toggleBoldBtn.addEventListener('click', () => {
+                isBoldEnabled = !isBoldEnabled;
+                updateBoldToggleButton();
+            });
+
+            // --- Dark Mode Toggle Functionality ---
+            function updateDarkModeToggleButton() {
+                if (isDarkModeEnabled) {
+                    document.body.classList.add('dark-mode-enabled');
+                } else {
+                    document.body.classList.remove('dark-mode-enabled');
+                }
+                darkModeToggleBtn.title = isDarkModeEnabled ? 
+                    (currentLanguage === 'ar' ? 'إيقاف الوضع الداكن' : 'Disable Dark Mode') : 
+                    (currentLanguage === 'ar' ? 'تبديل الوضع الداكن' : 'Toggle Dark Mode');
+            }
+
+            darkModeToggleBtn.addEventListener('click', () => {
+                isDarkModeEnabled = !isDarkModeEnabled;
+                updateDarkModeToggleButton();
+            });
+
+            // تم إزالة Distraction-Free Mode Functionality
+            // function updateDistractionFreeModeButton() {
+            //     if (isDistractionFreeModeEnabled) {
+            //         document.body.classList.add('distraction-free-mode-enabled');
+            //         document.documentElement.classList.add('distraction-free-mode-enabled'); // Apply to HTML as well
+            //     } else {
+            //         document.body.classList.remove('distraction-free-mode-enabled');
+            //         document.documentElement.classList.remove('distraction-free-mode-enabled');
+            //     }
+            //     distractionFreeModeToggleBtn.title = isDistractionFreeModeEnabled ? 
+            //         (currentLanguage === 'ar' ? 'إيقاف وضع القراءة الخالي من التشتيت' : 'Disable Distraction-Free Mode') : 
+            //         (currentLanguage === 'ar' ? 'وضع القراءة الخالي من التشتيت' : 'Distraction-Free Reading Mode');
+            // }
+
+            // distractionFreeModeToggleBtn.addEventListener('click', () => {
+            //     isDistractionFreeModeEnabled = !isDistractionFreeModeEnabled;
+            //     updateDistractionFreeModeButton();
+            // });
+
+
+            // --- Favorites Functionality ---
+            let isViewingFavorites = false; // لتتبع ما إذا كنا نعرض المفضلة أم كل الأحاديث
+
+            function filterAndDisplayFavorites() {
+                searchInput.value = ''; // مسح مربع البحث عند تبديل للمفضلة
+                currentHadiths = allHadiths.filter(hadith => favoritedHadithIds.has(hadith.id));
+                resetAndDisplayHadiths();
+            }
+
+            function updateViewFavoritesButton() {
+                if (isViewingFavorites) {
+                    viewFavoritesBtn.classList.add('bg-blue-500', 'text-white'); // Highlight if active
+                    viewFavoritesBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                    viewFavoritesBtn.title = currentLanguage === 'ar' ? 'عرض كل الأحاديث' : 'View All Hadiths';
+                } else {
+                    viewFavoritesBtn.classList.remove('bg-blue-500', 'text-white');
+                    viewFavoritesBtn.classList.add('bg-gray-200', 'text-gray-700');
+                    viewFavoritesBtn.title = currentLanguage === 'ar' ? 'عرض الأحاديث المفضلة' : 'View Favorites';
+                }
+            }
+
+            viewFavoritesBtn.addEventListener('click', () => {
+                // حفظ الموضع الحالي فقط إذا كنا ننتقل من عرض جميع الأحاديث إلى المفضلة
+                if (!isViewingFavorites) {
+                     // The IntersectionObserver already saves last read position automatically.
+                     // No need for manual save here.
+                }
+
+                isViewingFavorites = !isViewingFavorites;
+                updateViewFavoritesButton();
+
+                if (isViewingFavorites) {
+                    filterAndDisplayFavorites();
+                } else {
+                    currentHadiths = allHadiths; // العودة لعرض كل الأحاديث
+                    resetAndDisplayHadiths(); // ستتولى هذه الدالة التمرير إذا كان lastReadHadithId موجودًا
+                }
+            });
+
+
+            // --- Event Handlers (executeSearch, handleScroll) ---
+            function executeSearch() {
+                const searchTerm = searchInput.value.trim(); // No toLowerCase() for number search
+                const hadithId = parseInt(searchTerm); // Try to parse as an integer
+
+                let hadithsToSearchIn = isViewingFavorites ? 
+                                        allHadiths.filter(hadith => favoritedHadithIds.has(hadith.id)) : 
+                                        allHadiths;
+
+                if (searchTerm === '') {
+                    // If search input is cleared, show all hadiths or favorited hadiths
+                    currentHadiths = hadithsToSearchIn;
+                } else if (!isNaN(hadithId) && hadithId > 0) {
+                    // If it's a valid number, search by hadith ID
+                    currentHadiths = hadithsToSearchIn.filter(hadith => hadith.id === hadithId);
+                } else {
+                    // Otherwise, perform text search
+                    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+                    if (currentLanguage === 'ar') {
+                        const normalizedSearchTerm = normalizeArabicForSearch(lowerCaseSearchTerm);
+                        currentHadiths = hadithsToSearchIn.filter(hadith =>
+                            hadith.normalizedArabic.includes(normalizedSearchTerm)
+                        );
+                    } else { // English search
+                        currentHadiths = hadithsToSearchIn.filter(hadith =>
+                            hadith.englishTextForSearch.toLowerCase().includes(lowerCaseSearchTerm)
+                        );
+                    }
                 }
                 resetAndDisplayHadiths(); 
             }
@@ -437,10 +924,22 @@
                 }
             });
              searchInput.addEventListener('input', () => {
-                // Trigger search when input is cleared
+                // Trigger search when input is cleared or if a number is typed and it's a valid ID
+                // This will re-trigger the search and show the matching hadith instantly if it's a number
                 if(searchInput.value.trim() === '') {
                     executeSearch();
+                } else {
+                    const hadithId = parseInt(searchInput.value.trim());
+                    if (!isNaN(hadithId) && hadithId > 0) {
+                        executeSearch();
+                    }
                 }
+            });
+
+            // إضافة مستمع لحدث النقر على زر تبديل اللغة
+            langToggle.addEventListener('click', () => {
+                currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
+                updateLangToggleButton(); // تحديث الزر ومربع البحث وإعادة عرض الأحاديث
             });
 
 
@@ -461,6 +960,19 @@
 
             // --- Initial Load ---
             loadData();
+
+            // PWA: Register Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(registration => {
+                            console.log('Service Worker registered:', registration);
+                        })
+                        .catch(error => {
+                            console.error('Service Worker registration failed:', error);
+                        });
+                });
+            }
         });
     </script>
 </body>
