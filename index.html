@@ -238,7 +238,6 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.974 2.887a1 1 0 00-.364 1.118l1.519 4.674c.3.921-.755 1.688-1.539 1.118l-3.974-2.887a1 1 0 00-1.176 0l-3.974 2.887c-.784.57-1.838-.197-1.539-1.118l1.519-4.674a1 1 0 00-.364-1.118L2.92 10.091c-.783-.57-.381-1.81.588-1.81h4.915a1 1 0 00.95-.69l1.519-4.674z" />
                         </svg>
                     </button>
-                    <!-- تم إزالة زر وضع القراءة الخالي من التشتيت -->
                 </div>
             </div>
         </div>
@@ -642,27 +641,26 @@
             function resetAndDisplayHadiths() {
                 displayCount = 0;
                 hadithsContainer.innerHTML = '';
-                // Disconnect observer when clearing content
+                // Disconnect old observer if exists
                 if (observer) {
                     observer.disconnect();
                     observer = null; // Clear the observer instance
                 }
-                // Scroll to top when resetting and displaying hadiths after a search
-                window.scrollTo({ top: 0, behavior: 'smooth' }); 
+                // تم إزالة السطر التالي الذي كان يسبب التمرير التلقائي إلى الأعلى عند إعادة تعيين عرض الأحاديث
+                // window.scrollTo({ top: 0, behavior: 'smooth' }); 
                 renderHadiths(0, currentHadiths);
                 applyFontSize(); // Apply font size after re-rendering
 
-                // New logic: Scroll to last read position ONLY if returning from favorites
-                // and we are back to viewing all hadiths and a lastReadHadithId exists.
-                // يتم تطبيق التمرير بفاصل زمني لضمان تحميل العناصر
-                if (!isViewingFavorites && lastReadHadithId !== null && currentHadiths === allHadiths) {
-                    setTimeout(() => {
-                        const targetElement = document.querySelector(`[data-hadith-id="${lastReadHadithId}"]`);
-                        if (targetElement) {
-                            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }
-                    }, 300); // 300ms delay to allow elements to render
-                }
+                // تم إزالة الأكواد التالية التي كانت تسبب التمرير إلى آخر موضع مقروء عند العودة من المفضلة
+                // بحيث يبقى المستخدم في موقعه الحالي
+                // if (!isViewingFavorites && lastReadHadithId !== null && currentHadiths === allHadiths) {
+                //     setTimeout(() => {
+                //         const targetElement = document.querySelector(`[data-hadith-id="${lastReadHadithId}"]`);
+                //         if (targetElement) {
+                //             targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                //         }
+                //     }, 300); // 300ms delay to allow elements to render
+                // }
             }
 
             function updateSearchInfo() {
